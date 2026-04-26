@@ -21,6 +21,7 @@ import {
   FacebookAuthGuard,
 } from './guards/auth.guards';
 import { Public } from '../../common/decorators/public.decorator';
+import { ResponseMessage } from '../../common/decorators/response-message.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -30,6 +31,7 @@ export class AuthController {
   // ─── Public ───────────────────────────────────────────────────────────────────
 
   @Public()
+  @ResponseMessage('Account created successfully')
   @Post('signup')
   @ApiOperation({ summary: 'Register a new account' })
   signup(@Body() createUserDto: CreateUserDto) {
@@ -37,6 +39,7 @@ export class AuthController {
   }
 
   @Public()
+  @ResponseMessage('Logged in successfully')
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -47,6 +50,7 @@ export class AuthController {
   }
 
   @Public()
+  @ResponseMessage('Tokens refreshed successfully')
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -13,6 +12,9 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { GlobalJwtAccessGuard } from './common/guards/global-jwt.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -31,6 +33,15 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
   controllers: [AppController],
   providers: [
     AppService,
+    // ─── Global interceptors & filters ────────────────────────────────────────
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
     // ─── Global guards (applied in order) ─────────────────────────────────────
     // 1. JWT: authenticate every request; skip @Public() routes
     {
