@@ -13,7 +13,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('users')
+@ApiBearerAuth('access-token')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

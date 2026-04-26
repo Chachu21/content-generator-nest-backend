@@ -12,7 +12,10 @@ import { CreatePermissionDto } from './dto/create-permission.dto';
 import { UpdatePermissionDto } from './dto/update-permission.dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { RequirePermissions } from '../../../common/decorators/require-permissions.decorator';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiTags('permissions')
+@ApiBearerAuth('access-token')
 @Controller('permission')
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
