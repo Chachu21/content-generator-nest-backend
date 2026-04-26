@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { MembershipsService } from './memberships.service';
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @ApiTags('memberships')
 @ApiBearerAuth('access-token')
@@ -13,9 +14,9 @@ export class MembershipsController {
   @Get()
   @RequirePermissions('membership:read')
   @ResponseMessage('Memberships fetched successfully')
-  @ApiOperation({ summary: 'Get all memberships' })
-  findAll() {
-    return this.membershipsService.findAll();
+  @ApiOperation({ summary: 'Get all memberships with pagination and search' })
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.membershipsService.findAll(query);
   }
 
   @Get(':id')

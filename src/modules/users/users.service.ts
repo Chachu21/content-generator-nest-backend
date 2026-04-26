@@ -6,6 +6,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role } from '../rbac/roles/entities/role.entity';
 import * as bcrypt from 'bcrypt';
+import { PaginationQueryDto, SortOrder } from '../../common/dto/pagination-query.dto';
+import { PaginatedResult, createPaginatedResponse } from '../../common/utils/pagination.util';
 
 @Injectable()
 export class UsersService {
@@ -94,10 +96,29 @@ export class UsersService {
     return user;
   }
 
-  async findAll() {
-    return this.userRepository.find({
-      relations: ['roles'],
-    });
+  async findAll(query: PaginationQueryDto): Promise<PaginatedResult<User>> {
+    const { page, limit, search, sortBy = 'createdAt', sortOrder = SortOrder.DESC } = query;
+
+    const queryBuilder = this.userRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'roles');
+
+    if (search) {
+      queryBuilder.where(
+        'user.email ILIKE :search OR user.firstName ILIKE :search OR user.lastName ILIKE :search',
+        { search: `%${search}%` },
+      );
+    }
+
+    queryBuilder.orderBy(`user.${sortBy}`, sortOrder);
+
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      queryBuilder.skip(skip).take(limit);
+    }
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return createPaginatedResponse(data, total, page || 1, limit || total);
   }
 
   async findOne(id: string) {

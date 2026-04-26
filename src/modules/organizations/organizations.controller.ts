@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { OrganizationsService } from './organizations.service';
@@ -14,6 +15,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @ApiTags('organizations')
 @ApiBearerAuth('access-token')
@@ -32,9 +34,9 @@ export class OrganizationsController {
   @Get()
   @RequirePermissions('org:read')
   @ResponseMessage('Organizations fetched successfully')
-  @ApiOperation({ summary: 'Get all organizations' })
-  findAll() {
-    return this.organizationsService.findAll();
+  @ApiOperation({ summary: 'Get all organizations with pagination and search' })
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.organizationsService.findAll(query);
   }
 
   @Get(':id')

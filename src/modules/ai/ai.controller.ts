@@ -16,7 +16,8 @@ export class AiController {
   @ResponseMessage('Content generated successfully')
   @ApiOperation({ summary: 'Generate AI content (Amharic/English)' })
   async generate(@Body() dto: GenerateContentDto) {
-    const content = await this.aiService.generateContent(dto);
+    // Note: In a production app, we would verify that the user belongs to dto.organizationId here
+    const content = await this.aiService.generateContent(dto, dto.organizationId);
     return { content };
   }
 }

@@ -15,6 +15,14 @@ export class PlanSeedService {
   async seedPlans() {
     const plans = [
       {
+        name: 'Trial',
+        price: 0,
+        currency: 'USD',
+        interval: 'MONTHLY',
+        description: '7-day free trial with 2 requests per day',
+        features: { posts_per_day: 2, seo: false, analytics: false, trial: true },
+      },
+      {
         name: 'Freemium',
         price: 0,
         currency: 'USD',

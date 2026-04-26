@@ -1,8 +1,24 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { GenerateContentDto, ContentType, TargetIndustry } from './dto/generate-content.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Between } from 'typeorm';
+import {
+  GenerateContentDto,
+  ContentType,
+  TargetIndustry,
+} from './dto/generate-content.dto';
+import { Content } from '../contents/entities/content.entity';
+import {
+  Subscription,
+  SubscriptionStatus,
+} from '../subscriptions/entities/subscription.entity';
 
 @Injectable()
 export class AiService {
@@ -11,9 +27,17 @@ export class AiService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    @InjectRepository(Content)
+    private readonly contentRepository: Repository<Content>,
+    @InjectRepository(Subscription)
+    private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
-  async generateContent(dto: GenerateContentDto): Promise<string> {
+  async generateContent(dto: GenerateContentDto, organizationId?: string): Promise<string> {
+    if (organizationId) {
+      await this.checkDailyLimit(organizationId);
+    }
+
     const { type, industry, language, topic, keywords, tone } = dto;
     const apiKey = this.configService.get<string>('ai.grok.apiKey') || '';
     const apiUrl = this.configService.get<string>('ai.grok.apiUrl') || 'https://api.x.ai/v1/chat/completions';
@@ -95,5 +119,44 @@ export class AiService {
     }
 
     return `${instructions} Topic: ${topic}. ${keywordText} ${toneText} Output only the ${language === 'am' ? 'Amharic' : 'English'} text.`;
+  }
+
+  private async checkDailyLimit(organizationId: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Get current active subscription
+    const subscription = await this.subscriptionRepository.findOne({
+      where: {
+        organization: { id: organizationId },
+        status: SubscriptionStatus.ACTIVE,
+      },
+      relations: ['plan'],
+    });
+
+    if (!subscription) {
+      throw new ForbiddenException('No active subscription found for this organization');
+    }
+
+    // Check if subscription has expired
+    if (new Date() > subscription.endDate) {
+      throw new ForbiddenException('Your subscription has expired');
+    }
+
+    const limit = subscription.plan.features?.posts_per_day || 0;
+    if (limit === -1) return; // Unlimited
+
+    const usageCount = await this.contentRepository.count({
+      where: {
+        organization: { id: organizationId },
+        createdAt: Between(today, tomorrow),
+      },
+    });
+
+    if (usageCount >= limit) {
+      throw new ForbiddenException(`Daily limit reached (${limit} requests/day). Please upgrade your plan.`);
+    }
   }
 }

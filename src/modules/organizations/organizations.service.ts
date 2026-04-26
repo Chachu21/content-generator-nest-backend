@@ -4,12 +4,21 @@ import { Repository } from 'typeorm';
 import { Organization } from './entities/organization.entity';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { PaginationQueryDto, SortOrder } from '../../common/dto/pagination-query.dto';
+import { PaginatedResult, createPaginatedResponse } from '../../common/utils/pagination.util';
+
+import { Plan } from '../plans/entities/plan.entity';
+import { Subscription, SubscriptionStatus } from '../subscriptions/entities/subscription.entity';
 
 @Injectable()
 export class OrganizationsService {
   constructor(
     @InjectRepository(Organization)
     private readonly organizationRepository: Repository<Organization>,
+    @InjectRepository(Plan)
+    private readonly planRepository: Repository<Plan>,
+    @InjectRepository(Subscription)
+    private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
   async create(createOrganizationDto: CreateOrganizationDto): Promise<Organization> {
@@ -20,13 +29,51 @@ export class OrganizationsService {
         .replace(/ /g, '-')
         .replace(/[^\w-]+/g, '');
     }
-    return await this.organizationRepository.save(organization);
+    const savedOrg = await this.organizationRepository.save(organization);
+
+    // Auto-subscribe to Trial plan
+    const trialPlan = await this.planRepository.findOne({ where: { name: 'Trial' } });
+    if (trialPlan) {
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(startDate.getDate() + 7); // 7-day trial
+
+      const subscription = this.subscriptionRepository.create({
+        organization: savedOrg,
+        plan: trialPlan,
+        startDate,
+        endDate,
+        status: SubscriptionStatus.ACTIVE,
+      });
+      await this.subscriptionRepository.save(subscription);
+    }
+
+    return savedOrg;
   }
 
-  async findAll(): Promise<Organization[]> {
-    return await this.organizationRepository.find({
-      relations: ['memberships', 'subscriptions'],
-    });
+  async findAll(query: PaginationQueryDto): Promise<PaginatedResult<Organization>> {
+    const { page, limit, search, sortBy = 'createdAt', sortOrder = SortOrder.DESC } = query;
+
+    const queryBuilder = this.organizationRepository.createQueryBuilder('organization')
+      .leftJoinAndSelect('organization.memberships', 'memberships')
+      .leftJoinAndSelect('organization.subscriptions', 'subscriptions');
+
+    if (search) {
+      queryBuilder.where('organization.name ILIKE :search OR organization.slug ILIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    queryBuilder.orderBy(`organization.${sortBy}`, sortOrder);
+
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      queryBuilder.skip(skip).take(limit);
+    }
+
+    const [data, total] = await queryBuilder.getManyAndCount();
+
+    return createPaginatedResponse(data, total, page || 1, limit || total);
   }
 
   async findOne(id: string): Promise<Organization> {

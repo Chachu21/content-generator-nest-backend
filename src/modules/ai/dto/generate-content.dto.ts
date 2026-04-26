@@ -28,6 +28,11 @@ export class GenerateContentDto {
   @IsNotEmpty()
   language: string;
 
+  @ApiProperty({ example: 'uuid-of-organization', description: 'The organization ID for which to generate content' })
+  @IsString()
+  @IsNotEmpty()
+  organizationId: string;
+
   @ApiProperty({ example: 'New organic Yirgacheffe coffee beans launch' })
   @IsString()
   @IsNotEmpty()

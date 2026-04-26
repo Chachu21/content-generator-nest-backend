@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import databaseConfig from './core/config/database.config';
 import authConfig from './core/config/auth.config';
 import aiConfig from './core/config/ai.config';
+import paymentConfig from './core/config/payment.config';
 import { DatabaseModule } from './core/config/database.module';
 import { PermissionModule } from './modules/rbac/permissions/permission.module';
 import { RoleModule } from './modules/rbac/roles/role.module';
@@ -22,12 +23,13 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { ContentsModule } from './modules/contents/contents.module';
 import { AiModule } from './modules/ai/ai.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, authConfig, aiConfig],
+      load: [databaseConfig, authConfig, aiConfig, paymentConfig],
     }),
 
     DatabaseModule,
@@ -42,6 +44,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
     ContentsModule,
     AiModule,
     OrganizationsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

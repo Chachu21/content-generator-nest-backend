@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ContentsService } from './contents.service';
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator';
 import { ResponseMessage } from '../../common/decorators/response-message.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @ApiTags('contents')
 @ApiBearerAuth('access-token')
@@ -21,9 +22,9 @@ export class ContentsController {
   @Get()
   @RequirePermissions('content:read')
   @ResponseMessage('Contents fetched successfully')
-  @ApiOperation({ summary: 'Get all contents' })
-  findAll() {
-    return this.contentsService.findAll();
+  @ApiOperation({ summary: 'Get all contents with pagination and search' })
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.contentsService.findAll(query);
   }
 
   @Get(':id')
