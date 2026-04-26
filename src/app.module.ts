@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import databaseConfig from './core/config/database.config';
 import authConfig from './core/config/auth.config';
+import aiConfig from './core/config/ai.config';
 import { DatabaseModule } from './core/config/database.module';
 import { PermissionModule } from './modules/rbac/permissions/permission.module';
 import { RoleModule } from './modules/rbac/roles/role.module';
@@ -19,12 +20,14 @@ import { MembershipsModule } from './modules/memberships/memberships.module';
 import { PlansModule } from './modules/plans/plans.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { ContentsModule } from './modules/contents/contents.module';
+import { AiModule } from './modules/ai/ai.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, authConfig],
+      load: [databaseConfig, authConfig, aiConfig],
     }),
 
     DatabaseModule,
@@ -37,6 +40,8 @@ import { ContentsModule } from './modules/contents/contents.module';
     PlansModule,
     SubscriptionsModule,
     ContentsModule,
+    AiModule,
+    OrganizationsModule,
   ],
   controllers: [AppController],
   providers: [
