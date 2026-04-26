@@ -17,8 +17,19 @@ export class PermissionService {
     return this.permissionRepository.save(permission);
   }
 
-  findAll() {
-    return this.permissionRepository.find();
+  async findAll() {
+    const permissions = await this.permissionRepository.find();
+    return permissions.reduce(
+      (acc, permission) => {
+        const { module, ...details } = permission;
+        if (!acc[module]) {
+          acc[module] = [];
+        }
+        acc[module].push(details);
+        return acc;
+      },
+      {} as Record<string, Omit<Permission, 'module'>[]>,
+    );
   }
 
   findOne(id: string) {
