@@ -6,7 +6,9 @@ import {
   JoinTable,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Membership } from '../../memberships/entities/membership.entity';
 import { Role } from '../../rbac/roles/entities/role.entity';
 
 @Entity('users')
@@ -45,6 +47,9 @@ export class User {
     inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
   })
   roles: Role[];
+
+  @OneToMany(() => Membership, (membership) => membership.user)
+  memberships: Membership[];
 
   @CreateDateColumn()
   createdAt: Date;

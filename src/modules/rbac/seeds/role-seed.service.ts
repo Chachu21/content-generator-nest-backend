@@ -27,7 +27,17 @@ export class RoleSeedService {
       {
         name: 'Admin',
         description: 'Administrative access',
-        permissionKeys: ['user:read', 'user:update', 'content:read', 'content:update', 'role:read'],
+        permissionKeys: [
+          'user:read',
+          'user:update',
+          'content:read',
+          'content:update',
+          'role:read',
+          'org:read',
+          'org:update',
+          'plan:read',
+          'sub:read',
+        ],
       },
       {
         name: 'Editor',

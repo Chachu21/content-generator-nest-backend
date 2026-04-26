@@ -15,6 +15,10 @@ import { PermissionsGuard } from './common/guards/permissions.guard';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { MembershipsModule } from './modules/memberships/memberships.module';
+import { PlansModule } from './modules/plans/plans.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { ContentsModule } from './modules/contents/contents.module';
 
 @Module({
   imports: [
@@ -29,6 +33,10 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
     UsersModule,
     AuthModule,
     RbacSeedModule,
+    MembershipsModule,
+    PlansModule,
+    SubscriptionsModule,
+    ContentsModule,
   ],
   controllers: [AppController],
   providers: [
