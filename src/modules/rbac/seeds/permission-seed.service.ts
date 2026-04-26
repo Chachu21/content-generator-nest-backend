@@ -4,17 +4,13 @@ import { Repository } from 'typeorm';
 import { Permission } from '../permissions/entities/permission.entity';
 
 @Injectable()
-export class PermissionSeedService implements OnApplicationBootstrap {
+export class PermissionSeedService {
   private readonly logger = new Logger(PermissionSeedService.name);
 
   constructor(
     @InjectRepository(Permission)
     private readonly permissionRepository: Repository<Permission>,
   ) {}
-
-  async onApplicationBootstrap() {
-    await this.seedPermissions();
-  }
 
   async seedPermissions() {
     const permissions = [
