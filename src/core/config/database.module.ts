@@ -1,42 +1,33 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigService, ConfigModule } from '@nestjs/config';
-import { DataSource } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { DatabaseConfig } from './database.config';
 
 @Global()
 @Module({
-  imports: [ConfigModule],
-  providers: [
-    {
-      provide: DataSource,
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
+      useFactory: (config: ConfigService) => {
         const db = config.getOrThrow<DatabaseConfig>('database');
-        const datasource = new DataSource({
+        return {
           type: 'postgres',
           host: db.host,
           port: db.port,
           username: db.username,
           password: db.password,
           database: db.name,
-          entities: [],
-          // ⚠️ dev only
+          autoLoadEntities: true,
           synchronize: db.synchronize,
           logging: process.env.NODE_ENV !== 'production',
-          // ✅ pool config
           extra: {
-            max: 20,
+            connectionLimit: 10,
           },
-        });
-        try {
-          await datasource.initialize();
-          console.log('database connected');
-        } catch (error) {
-          console.error('database connection failed', error);
-        }
+        };
       },
-    },
+    }),
   ],
-  exports: [DataSource],
+  exports: [TypeOrmModule],
 })
 export class DatabaseModule {}

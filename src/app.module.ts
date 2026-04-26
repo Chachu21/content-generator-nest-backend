@@ -2,8 +2,12 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import databaseConfig from './config/database.config';
-import { DatabaseModule } from './config/database.module';
+import databaseConfig from './core/config/database.config';
+import { DatabaseModule } from './core/config/database.module';
+import { PermissionModule } from './modules/rbac/permissions/permission.module';
+import { RoleModule } from './modules/rbac/roles/role.module';
+import { RbacSeedModule } from './modules/rbac/seeds/rbac-seed.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -12,6 +16,9 @@ import { DatabaseModule } from './config/database.module';
     }),
 
     DatabaseModule,
+    PermissionModule,
+    RoleModule,
+    RbacSeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
